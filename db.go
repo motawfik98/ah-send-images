@@ -4,11 +4,12 @@ import (
   "github.com/jinzhu/gorm"
   _ "github.com/jinzhu/gorm/dialects/mssql"
   "github.com/speps/go-hashids"
-  "golang.org/x/crypto/bcrypt"
-)
 
+)
+var db *gorm.DB
+var err error
 func initDB() {
-  db, err := gorm.Open("mssql", "sqlserver://remote:mohamed@localhost:1433?database=ah_images_go")
+  db, err = gorm.Open("mssql", "sqlserver://remote:mohamed@localhost:1433?database=ah_images_go")
   if err == nil {
     db.AutoMigrate(&MainDepartment{}, &SecondaryDepartment{}, &User{})
   }
