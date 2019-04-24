@@ -7,11 +7,11 @@ import (
 
 type User struct {
 	gorm.Model
-	Username              string `gorm:"not null"`
-	Password              string `gorm:"not null"`
+	Username              string `gorm:"not null" form:"username"`
+	Password              string `gorm:"not null" form:"password"`
 	Hash                  string
-	MainDepartmentID      int `gorm:"index"`
-	SecondaryDepartmentID int `gorm:"index"`
+	MainDepartmentID      int `gorm:"index" form:"main"`
+	SecondaryDepartmentID int `gorm:"index" form:"secondary"`
 }
 
 func (user *User) AfterCreate(scope *gorm.Scope) error {
