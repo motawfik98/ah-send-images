@@ -7,7 +7,17 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
    <script src="https://cdn.rtlcss.com/bootstrap/v4.2.1/js/bootstrap.min.js" integrity="sha384-a9xOd0rz8w0J8zqj1qJic7GPFfyMfoiuDjC9rqXlVOcGO/dmRqzMn34gZYDTel8k" crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" href="/assets/css/app.css">
     <meta charset="utf-8">
     <title>{{.title}}</title>
   </head>
   <body class="container">
+    {{if .status}}
+      <div class="alert alert-warning alert-dismissible fade show container flash
+      {{range .status}}{{.}}{{end}}" roleValue="alert">
+        <div class="flash">{{range .message}}{{.}}{{end}}</div>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {{end}}
