@@ -1,57 +1,54 @@
 package main
 
 import (
-  "net/http"
-  "github.com/gin-gonic/gin"
-  "github.com/gin-gonic/gin/binding"
-  "github.com/gorilla/sessions"
-  "golang.org/x/crypto/bcrypt"
+	"net/http"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var store = sessions.NewCookieStore([]byte("1298498081"))
-
-func showLoginPage(c* gin.Context) {
-  mainDepartments := findAllMainDepartments()
-  secondaryDepartments := findAllSecondaryDepartments()
-  session, err := store.Get(c.Request, "login")
-  if err != nil {
-    http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
-    return
-  }
-  flashStatus := session.Flashes("status")
-  flashMessage := session.Flashes("message")
-  session.Options.MaxAge = -1
-  session.Save(c.Request, c.Writer)
-  c.HTML (
-    http.StatusOK,
-    "login.html",
-    gin.H {
-      "title": "تسجيل دخول",
-      "mainDepartments": mainDepartments,
-      "secondaryDepartments": secondaryDepartments,
-      "status": flashStatus,
-      "message": flashMessage,
-    },
-  )
+func showLoginPage(c *gin.Context) {
+	mainDepartments := findAllMainDepartments()
+	secondaryDepartments := findAllSecondaryDepartments()
+  c.JSON(http.StatusOK, gin.H{
+    "title":                "تسجيل دخول",
+    "mainDepartments":      mainDepartments,
+    "secondaryDepartments": secondaryDepartments,
+  })
 }
 
 func performLogin(c *gin.Context) {
-  var loginData, user User
-  c.ShouldBindWith(&loginData, binding.Form)
-  session, err := store.Get(c.Request, "login")
-  db.Where("username = ? AND main_department_id = ? AND secondary_department_id = ?",
-          loginData.Username, loginData.MainDepartmentID, loginData.SecondaryDepartmentID).First(&user)
-  if user.ID == 0 {
-    if err != nil {
-      http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
-      return
+	var loginData, user User
+	c.ShouldBindJSON(&loginData)
+	db.Where("username = ? AND main_department_id = ? AND secondary_department_id = ?",
+		loginData.Username, loginData.MainDepartmentID, loginData.SecondaryDepartmentID).First(&user)
+	if user.ID == 0 {
+    c.JSON(http.StatusTemporaryRedirect, gin.H{
+      "flashStatus": "failure",
+      "flashMessage": "بيانات الدخول ليست صحيحه",
+      "url": "login",
+    })
+	} else {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+      c.JSON(http.StatusTemporaryRedirect, gin.H{
+        "flashStatus": "failure",
+        "flashMessage": "بيانات الدخول ليست صحيحه",
+        "url": "login",
+      })
+		} else {
+      c.JSON(http.StatusTemporaryRedirect, gin.H{
+        "url": "/",
+      })
     }
-    addFlashMessage(session, "failure", "بيانات الدخول ليست صحيحه", c)
-    http.Redirect(c.Writer, c.Request, "/login", 301)
-  } else {
-    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
-      addFlashMessage(session, "failure", "بيانات الدخول ليست صحيحه", c)
-      http.Redirect(c.Writer, c.Request, "/login", 301)
-    }
-  }
+	}
+}
+
+func logout(c *gin.Context) {
+	if err != nil {
+		http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusTemporaryRedirect, gin.H{
+    "url": "/login",
+  })
 }
