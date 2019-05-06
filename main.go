@@ -1,18 +1,17 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"./configurations"
+	"./handlers"
+	"github.com/labstack/echo"
 )
 
-var router *gin.Engine
-
 func main() {
-	initDB()
+	db, _ := configurations.InitDB()
 
-	router = gin.Default()
-	initializeRoutes()
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/assets", "./assets")
+	e := echo.New()
+	myDb := handlers.MyDB{GormDB: db}
+	handlers.InitializeRoutes(e, &myDb)
 
-	router.Run()
+	e.Logger.Fatal(e.Start(":8080"))
 }
